@@ -22,13 +22,35 @@ public class MainFrame extends JFrame {
     private AppointmentService appt = new AppointmentService();
 
     private User loggedIn;
+    
+    // --- 1. DEFINE ALL YOUR SIZES AND COLORS HERE ---
+    private static final Font UI_FONT_BOLD = new Font("Segoe UI", Font.BOLD, 18);
+    private static final Font UI_FONT = new Font("Segoe UI", Font.PLAIN, 18);
+    private static final Font TEXT_AREA_FONT = new Font("Monospaced", Font.PLAIN, 16);
+    private static final Dimension LOGIN_BUTTON_SIZE = new Dimension(300, 45);
+    private static final Dimension DASHBOARD_BUTTON_SIZE = new Dimension(260, 40);
+
+    // --- Here are the new colors ---
+    private static final Color COLOR_PRIMARY = new Color(0, 120, 215); // Vibrant Blue
+    private static final Color COLOR_POSITIVE = new Color(40, 167, 69); // Vibrant Green
+    private static final Color COLOR_SECONDARY = new Color(240, 173, 78); // Vibrant Orange
+    private static final Color COLOR_DANGER = new Color(220, 53, 69); // Vibrant Red
+    private static final Color COLOR_TEXT_ON_DARK = Color.WHITE;
+
+    private static final Color COLOR_HEADER_BG = new Color(52, 58, 64); // Dark Gray
+    private static final Color COLOR_HEADER_TEXT = Color.WHITE;
+    private static final Color COLOR_BACKGROUND_LIGHT = new Color(245, 245, 245); // Very light gray
+    private static final Color COLOR_WHITE = Color.WHITE;
+    private static final Color COLOR_DARK_TEXT = new Color(30, 30, 30);
+
 
     public MainFrame() {
         super("Blood Bank System - Prototype");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1024, 768); 
         setLocationRelativeTo(null);
 
+        root.setBackground(COLOR_BACKGROUND_LIGHT); 
         root.add(new LoginPanel(), "login");
         root.add(new DashboardPanel(), "dashboard");
 
@@ -36,13 +58,17 @@ public class MainFrame extends JFrame {
         cards.show(root, "login");
     }
 
-    // -------- Login panel --------
+    // -------- Login panel (Styled) --------
     class LoginPanel extends JPanel {
         public LoginPanel() {
             setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
-            c.insets = new Insets(8,8,8,8);
+            
+            setBackground(COLOR_WHITE); 
+            c.insets = new Insets(10, 10, 10, 10); 
             c.fill = GridBagConstraints.HORIZONTAL;
+            
+            // --- Create components ---
             JLabel userL = new JLabel("Username:");
             JLabel passL = new JLabel("Password:");
             JTextField userF = new JTextField(15);
@@ -51,15 +77,45 @@ public class MainFrame extends JFrame {
             JButton regB = new JButton("Register as Donor (quick)");
             JButton btnRegisterRecipient = new JButton("Register as Recipient");
 
+            // --- Apply ALL Fonts & Colors ---
+            userL.setFont(UI_FONT_BOLD);
+            userL.setForeground(COLOR_DARK_TEXT); 
+            passL.setFont(UI_FONT_BOLD);
+            passL.setForeground(COLOR_DARK_TEXT); 
+            
+            userF.setFont(UI_FONT);
+            passF.setFont(UI_FONT);
+            
+            loginB.setFont(UI_FONT_BOLD);
+            loginB.setBackground(COLOR_PRIMARY); // Set button color
+            loginB.setForeground(COLOR_TEXT_ON_DARK); // Set text color
+            
+            regB.setFont(UI_FONT);
+            regB.setBackground(COLOR_POSITIVE); // Set button color
+            regB.setForeground(COLOR_TEXT_ON_DARK); // Set text color
+
+            btnRegisterRecipient.setFont(UI_FONT);
+            btnRegisterRecipient.setBackground(COLOR_SECONDARY); // Set button color
+            btnRegisterRecipient.setForeground(COLOR_DARK_TEXT); // Use dark text on light orange
+            
+            // --- Apply ALL Sizes ---
+            loginB.setPreferredSize(LOGIN_BUTTON_SIZE);
+            regB.setPreferredSize(LOGIN_BUTTON_SIZE);
+            btnRegisterRecipient.setPreferredSize(LOGIN_BUTTON_SIZE);
+
+            // --- Add to panel ---
             c.gridx=0; c.gridy=0; add(userL,c);
             c.gridx=1; add(userF,c);
             c.gridx=0; c.gridy=1; add(passL,c);
             c.gridx=1; add(passF,c);
-            c.gridy=2; c.gridx=0; add(loginB,c);
-            c.gridx=1; add(regB,c);
-            c.gridy = 4; // <-- ADD THESE
-            add(btnRegisterRecipient, c);
-
+            
+            c.gridwidth = 2; 
+            c.gridx = 0; 
+            c.gridy=2; add(loginB,c);
+            c.gridy=3; add(regB,c);
+            c.gridy=4; add(btnRegisterRecipient, c);
+            
+            // --- Action Listeners (Unchanged) ---
             loginB.addActionListener(e -> {
                 String u = userF.getText().trim();
                 String p = new String(passF.getPassword());
@@ -88,100 +144,134 @@ public class MainFrame extends JFrame {
                 }
             });
 
-            // ADD THIS ENTIRE BLOCK
-btnRegisterRecipient.addActionListener(e -> {
-    try {
-        String user = JOptionPane.showInputDialog(this, "Enter username:");
-        if (user == null || user.trim().isEmpty()) return;
-
-        String pass = JOptionPane.showInputDialog(this, "Enter password:");
-        if (pass == null || pass.trim().isEmpty()) return;
-
-        String first = JOptionPane.showInputDialog(this, "Enter First Name:");
-        String last = JOptionPane.showInputDialog(this, "Enter Last Name:");
-
-        // Ask for blood type
-        Object[] types = Enums.BloodType.values();
-        Enums.BloodType selectedType = (Enums.BloodType) JOptionPane.showInputDialog(this,
-                "Select blood type NEEDED:", "Recipient Registration",
-                JOptionPane.PLAIN_MESSAGE, null, types, types[0]);
-
-        if (selectedType == null) return; // User cancelled
-
-        // Use the new method from AuthService.java
-        User newUser = auth.registerRecipient(user, pass, first, last, selectedType);
-
-        if (newUser != null) {
-            JOptionPane.showMessageDialog(this, "Recipient registered successfully! You can now log in.");
-        } else {
-            JOptionPane.showMessageDialog(this, "Registration failed.");
-        }
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-    }
-});
+            btnRegisterRecipient.addActionListener(e -> {
+                try {
+                    String user = JOptionPane.showInputDialog(this, "Enter username:");
+                    if (user == null || user.trim().isEmpty()) return;
+                    String pass = JOptionPane.showInputDialog(this, "Enter password:");
+                    if (pass == null || pass.trim().isEmpty()) return;
+                    String first = JOptionPane.showInputDialog(this, "Enter First Name:");
+                    String last = JOptionPane.showInputDialog(this, "Enter Last Name:");
+                    Object[] types = Enums.BloodType.values();
+                    Enums.BloodType selectedType = (Enums.BloodType) JOptionPane.showInputDialog(this,
+                            "Select blood type NEEDED:", "Recipient Registration",
+                            JOptionPane.PLAIN_MESSAGE, null, types, types[0]);
+                    if (selectedType == null) return; 
+                    User newUser = auth.registerRecipient(user, pass, first, last, selectedType);
+                    if (newUser != null) {
+                        JOptionPane.showMessageDialog(this, "Recipient registered successfully! You can now log in.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Registration failed.");
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+                }
+            });
         }
     }
 
-    // -------- Dashboard panel (role-aware) --------
+
+    // -------- Dashboard panel (Styled) --------
     class DashboardPanel extends JPanel {
         JLabel header = new JLabel();
         JTextArea area = new JTextArea();
         JButton logout = new JButton("Logout");
 
         public DashboardPanel() {
-            setLayout(new BorderLayout());
+            setLayout(new BorderLayout(10, 10)); 
+            setBackground(COLOR_BACKGROUND_LIGHT); 
+
+            // --- TOP PANEL ---
             JPanel top = new JPanel(new BorderLayout());
+            top.setBackground(COLOR_HEADER_BG); // Dark Header Bar
+            top.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); 
+            header.setFont(UI_FONT_BOLD);
+            header.setForeground(COLOR_HEADER_TEXT); // White header text
+            logout.setFont(UI_FONT_BOLD);
+            logout.setPreferredSize(new Dimension(120, 45));
+            logout.setBackground(COLOR_DANGER); // Red logout button
+            logout.setForeground(COLOR_TEXT_ON_DARK); // White text
             top.add(header, BorderLayout.WEST);
             top.add(logout, BorderLayout.EAST);
             add(top, BorderLayout.NORTH);
 
+            // --- CENTER PANEL ---
             area.setEditable(false);
+            area.setFont(TEXT_AREA_FONT); 
+            area.setMargin(new Insets(10, 10, 10, 10));
+            area.setBackground(COLOR_WHITE); 
+            area.setForeground(COLOR_DARK_TEXT); 
             add(new JScrollPane(area), BorderLayout.CENTER);
 
-            JPanel controls = new JPanel();
+            // --- BOTTOM CONTROLS ---
+            JPanel controls = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10)); 
+            controls.setBackground(COLOR_WHITE); 
+            controls.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); 
 
             JButton btnSearchBlood = new JButton("Search Blood");
             JButton btnListUnits = new JButton("List All Units");
             JButton btnSchedule = new JButton("Schedule Appointment (tomorrow 10am)");
+            JButton btnRequest = new JButton("Request Blood");
+            JButton btnAddUnit = new JButton("Add Blood Unit (Staff only)");
+            JButton btnIssueUnit = new JButton("Issue Reserved Unit (Staff only)");
+            JButton btnViewUsers = new JButton("View All Users (Admin only)");
+
+            // --- Set font and size for ALL control buttons ---
+            btnSearchBlood.setFont(UI_FONT);
+            btnSearchBlood.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            btnSearchBlood.setBackground(COLOR_PRIMARY); // Blue
+            btnSearchBlood.setForeground(COLOR_TEXT_ON_DARK);
+            
+            btnListUnits.setFont(UI_FONT);
+            btnListUnits.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            // (Leaving this one default gray)
+            
+            btnSchedule.setFont(UI_FONT);
+            btnSchedule.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            btnSchedule.setBackground(COLOR_POSITIVE); // Green
+            btnSchedule.setForeground(COLOR_TEXT_ON_DARK);
+            
+            btnRequest.setFont(UI_FONT);
+            btnRequest.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            btnRequest.setBackground(COLOR_SECONDARY); // Orange
+            btnRequest.setForeground(COLOR_DARK_TEXT);
+            
+            btnAddUnit.setFont(UI_FONT);
+            btnAddUnit.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            // (Leaving staff buttons default)
+
+            btnIssueUnit.setFont(UI_FONT);
+            btnIssueUnit.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            // (Leaving staff buttons default)
+            
+            btnViewUsers.setFont(UI_FONT);
+            btnViewUsers.setPreferredSize(DASHBOARD_BUTTON_SIZE);
+            // (Leaving admin button default)
+
+            // --- Add all buttons to control panel ---
             controls.add(btnSearchBlood);
             controls.add(btnSchedule);
             controls.add(btnListUnits);
-            JButton btnRequest = new JButton("Request Blood");
             controls.add(btnRequest);
-            JButton btnAddUnit = new JButton("Add Blood Unit (Staff only)");
-JButton btnIssueUnit = new JButton("Issue Reserved Unit (Staff only)");
-JButton btnViewUsers = new JButton("View All Users (Admin only)");
-
-controls.add(btnAddUnit);
-controls.add(btnIssueUnit);
-controls.add(btnViewUsers);
-
-
-           
-
-
-
+            controls.add(btnAddUnit);
+            controls.add(btnIssueUnit);
+            controls.add(btnViewUsers);
 
             add(controls, BorderLayout.SOUTH);
 
+            // --- Action Listeners (Unchanged) ---
             logout.addActionListener(e -> {
                 loggedIn = null;
                 cards.show(root, "login");
             });
 
            btnSearchBlood.addActionListener(e -> {
-                // Get all possible blood types from the Enum
                 Object[] types = Enums.BloodType.values();
-                
-                // Show a dialog box to ask the user
                 Enums.BloodType selectedType = (Enums.BloodType) JOptionPane.showInputDialog(this,
                         "Select blood type to search for:", "Search Blood",
                         JOptionPane.PLAIN_MESSAGE, null, types, types[0]);
     
-                // If the user selected a type (didn't cancel)
                 if (selectedType != null) {
-                    // Use the *selected* type for the search
                     List<BloodUnit> list = inv.searchByType(selectedType);
                     area.setText("Search results for " + selectedType + ":\n");
                     
@@ -215,134 +305,106 @@ controls.add(btnViewUsers);
             });
 
             btnRequest.addActionListener(e -> {
-    if (!(loggedIn instanceof Recipient)) {
-        JOptionPane.showMessageDialog(this, "Only recipients can request blood. Please login as a recipient.");
-        return;
-    }
+                if (!(loggedIn instanceof Recipient)) {
+                    JOptionPane.showMessageDialog(this, "Only recipients can request blood. Please login as a recipient.");
+                    return;
+                }
+                Recipient rec = (Recipient) loggedIn;
+                List<BloodUnit> available = inv.searchByType(rec.getBloodTypeNeeded());
+                if (available.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No available units of type " + rec.getBloodTypeNeeded());
+                    return;
+                }
+                BloodUnit unit = available.get(0); 
+                boolean ok = inv.reserveBlood(unit.getUnitId(), rec.getUserId());
+                if (ok) {
+                    JOptionPane.showMessageDialog(this, "Blood unit " + unit.getUnitId() + " reserved for you!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Could not reserve unit.");
+                }
+            }); 
 
-    Recipient rec = (Recipient) loggedIn;
-    List<BloodUnit> available = inv.searchByType(rec.getBloodTypeNeeded());
+            // STAFF: Add a new blood unit
+            btnAddUnit.addActionListener(e -> {
+                if (!(loggedIn instanceof BloodBankStaff)) {
+                    JOptionPane.showMessageDialog(this, "Only staff can add blood units.");
+                    return;
+                }
+                Object[] types = Enums.BloodType.values();
+                Enums.BloodType type = (Enums.BloodType) JOptionPane.showInputDialog(this,
+                        "Select blood type:", "Add Unit", JOptionPane.PLAIN_MESSAGE, null, types, types[0]);
+                if (type == null) return;
+                String id = "b" + System.currentTimeMillis();
+                BloodUnit newUnit = new BloodUnit(id, type,
+                        java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(30), "loc1");
+                inv.addBloodUnit(newUnit);
+                JOptionPane.showMessageDialog(this, "Added unit: " + id + " (" + type + ")");
+            });
 
-    if (available.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "No available units of type " + rec.getBloodTypeNeeded());
-        return;
-    }
-
-    BloodUnit unit = available.get(0); // pick first available for simplicity
-    boolean ok = inv.reserveBlood(unit.getUnitId(), rec.getUserId());
-    if (ok) {
-        JOptionPane.showMessageDialog(this, "Blood unit " + unit.getUnitId() + " reserved for you!");
-    } else {
-        JOptionPane.showMessageDialog(this, "Could not reserve unit.");
-    }
-}); 
-
-    // STAFF: Add a new blood unit
-btnAddUnit.addActionListener(e -> {
-    if (!(loggedIn instanceof BloodBankStaff)) {
-        JOptionPane.showMessageDialog(this, "Only staff can add blood units.");
-        return;
-    }
-
-    Object[] types = Enums.BloodType.values();
-    Enums.BloodType type = (Enums.BloodType) JOptionPane.showInputDialog(this,
-            "Select blood type:", "Add Unit", JOptionPane.PLAIN_MESSAGE, null, types, types[0]);
-
-    if (type == null) return;
-
-    String id = "b" + System.currentTimeMillis();
-    BloodUnit newUnit = new BloodUnit(id, type,
-            java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(30), "loc1");
-
-    inv.addBloodUnit(newUnit);
-    JOptionPane.showMessageDialog(this, "Added unit: " + id + " (" + type + ")");
-});
-
-
-// STAFF: Issue a reserved blood unit
-// STAFF: Issue a reserved blood unit
-btnIssueUnit.addActionListener(e -> {
-    if (!(loggedIn instanceof BloodBankStaff)) {
-        JOptionPane.showMessageDialog(this, "Only staff can issue units.");
-        return;
-    }
-
-    List<BloodUnit> reserved = inv.listAll().stream()
-        .filter(u -> u.getStatus() == Enums.BloodStatus.RESERVED)
-        .collect(Collectors.toList());
-
-    if (reserved.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "No reserved units to issue.");
-        return;
-    }
-
-    // Create a list of strings for the dialog
-    Object[] options = reserved.stream()
-        .map(u -> u.getUnitId() + " (" + u.getBloodType() + ") for user " + u.getReservedByRecipientId())
-        .toArray();
-
-    // Show a dialog to let staff choose
-    String selectedOption = (String) JOptionPane.showInputDialog(this,
-            "Select reserved unit to issue:", "Issue Unit",
-            JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-
-    if (selectedOption != null) {
-        // Get the unitId from the selected string (it's the first word)
-        String unitId = selectedOption.split(" ")[0];
+            // STAFF: Issue a reserved blood unit
+            btnIssueUnit.addActionListener(e -> {
+                if (!(loggedIn instanceof BloodBankStaff)) {
+                    JOptionPane.showMessageDialog(this, "Only staff can issue units.");
+                    return;
+                }
+                List<BloodUnit> reserved = inv.listAll().stream()
+                    .filter(u -> u.getStatus() == Enums.BloodStatus.RESERVED)
+                    .collect(Collectors.toList());
+                if (reserved.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No reserved units to issue.");
+                    return;
+                }
+                Object[] options = reserved.stream()
+                    .map(u -> u.getUnitId() + " (" + u.getBloodType() + ") for user " + u.getReservedByRecipientId())
+                    .toArray();
+                String selectedOption = (String) JOptionPane.showInputDialog(this,
+                        "Select reserved unit to issue:", "Issue Unit",
+                        JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                if (selectedOption != null) {
+                    String unitId = selectedOption.split(" ")[0];
+                    boolean ok = inv.markIssued(unitId);
+                    if (ok) {
+                        JOptionPane.showMessageDialog(this, "Issued blood unit " + unitId);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Could not issue unit " + unitId + ". (Check InventoryService logic)");
+                    }
+                }
+            });
+            
+            // ADMIN: View all users
+            btnViewUsers.addActionListener(e -> {
+                if (!(loggedIn instanceof Administrator)) {
+                    JOptionPane.showMessageDialog(this, "Only admin can view all users.");
+                    return;
+                }
+                StringBuilder sb = new StringBuilder("All Users:\n\n");
+                for (User u : com.bloodbank.service.Database.getInstance().users.values()) {
+                    sb.append(u.getUserId()).append(" - ").append(u.getUsername())
+                    .append(" (").append(u.getClass().getSimpleName()).append(")\n");
+                }
+                area.setText(sb.toString());
+            });
         
-        // Try to issue the selected unit
-        boolean ok = inv.markIssued(unitId);
-        
-        if (ok) {
-            JOptionPane.showMessageDialog(this, "Issued blood unit " + unitId);
-        } else {
-            JOptionPane.showMessageDialog(this, "Could not issue unit " + unitId + ". (Check InventoryService logic)");
-        }
-    }
-});
-    // ADMIN: View all users
-btnViewUsers.addActionListener(e -> {
-    if (!(loggedIn instanceof Administrator)) {
-        JOptionPane.showMessageDialog(this, "Only admin can view all users.");
-        return;
-    }
-
-    StringBuilder sb = new StringBuilder("All Users:\n\n");
-    for (User u : com.bloodbank.service.Database.getInstance().users.values()) {
-        sb.append(u.getUserId()).append(" - ").append(u.getUsername())
-          .append(" (").append(u.getClass().getSimpleName()).append(")\n");
-    }
-
-    area.setText(sb.toString());
-});
-   
-// RECIPIENT: Request Blood
-btnRequest.addActionListener(e -> {
-    if (!(loggedIn instanceof Recipient)) {
-        JOptionPane.showMessageDialog(this, "Only recipients can request blood. Please login as a recipient.");
-        return;
-    }
-
-    Recipient rec = (Recipient) loggedIn;
-    List<BloodUnit> available = inv.searchByType(rec.getBloodTypeNeeded());
-
-    if (available.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "No available units of type " + rec.getBloodTypeNeeded());
-        return;
-    }
-
-    // pick the first available blood unit
-    BloodUnit unit = available.get(0);
-    boolean ok = inv.reserveBlood(unit.getUnitId(), rec.getUserId());
-
-    if (ok) {
-        JOptionPane.showMessageDialog(this, "Blood unit " + unit.getUnitId() + " reserved successfully!");
-    } else {
-        JOptionPane.showMessageDialog(this, "Could not reserve blood unit.");
-    }
-});
-
-
+            // RECIPIENT: Request Blood
+            btnRequest.addActionListener(e -> {
+                if (!(loggedIn instanceof Recipient)) {
+                    JOptionPane.showMessageDialog(this, "Only recipients can request blood. Please login as a recipient.");
+                    return;
+                }
+                Recipient rec = (Recipient) loggedIn;
+                List<BloodUnit> available = inv.searchByType(rec.getBloodTypeNeeded());
+                if (available.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No available units of type " + rec.getBloodTypeNeeded());
+                    return;
+                }
+                BloodUnit unit = available.get(0);
+                boolean ok = inv.reserveBlood(unit.getUnitId(), rec.getUserId());
+                if (ok) {
+                    JOptionPane.showMessageDialog(this, "Blood unit " + unit.getUnitId() + " reserved successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Could not reserve blood unit.");
+                }
+            });
         }
 
         @Override
